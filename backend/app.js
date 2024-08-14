@@ -2,6 +2,8 @@ const express = require("express")
 const cors = require("cors")
 const app = express()
 
+const errorMiddleware = require("./middlewares/error")
+
 app.use(cors())
 app.use(express.json())
 
@@ -13,5 +15,8 @@ app.use("/api/v1/isWorking", (req, res) => {
 })
 
 app.use("/api/v1", product)
+
+//Middleware for error
+app.use(errorMiddleware)
 
 module.exports = app
