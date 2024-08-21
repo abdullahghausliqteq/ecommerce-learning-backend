@@ -5,6 +5,7 @@ const ErrorHandler = require("../utils/errorHandler.js")
 
 //Create product -- Admin
 exports.createProduct = asyncErrors(async (req, res, next) => {
+    req.body.user = req.user.id
     const product = await Product.create(req.body)
     res.status(200).json({
         success: true,
@@ -16,9 +17,9 @@ exports.createProduct = asyncErrors(async (req, res, next) => {
 exports.getAllProducts = asyncErrors(async (req, res, next) => {
     let resultsPerPage = 5;
     const apiFeatures = new ApiFeatures(Product.find(), req.query)
-    .search()
-    .filter()
-    .pagination(resultsPerPage)
+        .search()
+        .filter()
+        .pagination(resultsPerPage)
     const products = await apiFeatures.query
     res.status(200).json({
         success: true,
