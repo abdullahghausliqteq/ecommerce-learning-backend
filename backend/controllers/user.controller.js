@@ -164,17 +164,58 @@ exports.updateProfile = asyncErrors(async (req, res, next) => {
 
 })
 
+//Update User Role
+exports.updateUserRole = asyncErrors(async (req, res, next) => {
+
+    const newUserData = {
+        name: req.body.name,
+        email: req.body.email,
+        role: req.body.role
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, newUserData, { new: true, runValidators: true })
+
+    res.status(200).json({
+        success: true,
+        message: "Role updated",
+        user
+    })
+
+})
+
 //All User Profiles
 exports.allUsers = asyncErrors(async (req, res, next) => {
 
-   const users = await User.find()
-
+    const users = await User.find()
     res.status(200).json({
         success: true,
         users
     })
 
 })
+
+//Get Single User Details - Admin
+exports.singleUserDetails = asyncErrors(async (req, res, next) => {
+    const user = await User.findById(req.params.id)
+    if (!user) return next(new ErrorHandler("User not found", 404));
+    res.status(200).json({
+        success: true,
+        user
+    })
+})
+
+
+//Delete User - Admin 
+exports.deleteUser = asyncErrors(async (req, res, next) => {
+    const user = await User.findByIdAndDelete(req.params.id)
+    if (!user) return next(new ErrorHandler("User not found", 404));
+    res.status(200).json({
+        success: true,
+        message: `User: ${user?.name} has been deleted successfully`
+    })
+})
+
+
 
 
 
