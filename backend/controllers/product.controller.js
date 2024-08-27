@@ -71,3 +71,88 @@ exports.productDetails = asyncErrors(async (req, res, next) => {
     })
 
 })
+
+//Create Product Review
+exports.createProductReview = asyncErrors(async (req, res, next) => {
+    const { rating, comment, productID } = req.body
+
+    const review = {
+        user: req.user.id,
+        name: req.user.name,
+        rating: Number(rating),
+        comment,
+    }
+
+    const product = await Product.findById(productID)
+
+    if (!product) return next(new ErrorHandler("Product not found", 404))
+
+    const isReviewed = product.reviews.find(rev => rev.user.toString() === req.user._id?.toString())
+
+    if (isReviewed) {
+        product.reviews.forEach(rev => {
+            if (rev.user._id.toString() === req.user.id) {
+                rev.rating = review.rating
+                rev.comment = review.comment
+            }
+        })
+    } else {
+        product.reviews.push(review)
+        product.numOfReviews = product.reviews.length
+    }
+
+    let avg = 0
+    product.reviews.forEach(rev => {
+        avg += rev.rating
+    })
+
+    product.rating = avg / product.reviews.length
+
+    await product.save({ validateBeforeSave: false })
+
+    res.status(200).json({
+        success: true,
+        message: "Review added successfully"
+    })
+
+})
+
+
+//Get all reviews of a product
+exports.allReviews = asyncErrors(async (req, res, next) => {
+    const product = await Product.findById(req.query.id)
+    if (!product) return next(new ErrorHandler("Product not found", 404))
+
+    res.status(200).json({
+        success: true,
+        reviews: product.reviews
+    })
+
+})
+
+
+//Delete review of a product
+exports.deleteReview = asyncErrors(async (req, res, next) => {
+    const product = await Product.findById(req.query.productId)
+    if (!product) return next(new ErrorHandler("Product not found", 404))
+
+    const review = product.reviews.filter(rev => rev._id.toString() !== req.query.id.toString())
+    if (review.length === product.reviews.length) return next(new ErrorHandler(`Review id ${req.query.id} not found`, 400))
+
+    let avg = 0
+    review.forEach(rev => {
+        avg += rev.rating
+    })
+
+    product.reviews = review
+    product.rating = avg / review.length
+    product.numOfReviews = review.length
+
+    await product.save({ validateBeforeSave: false })
+
+    res.status(200).json({
+        success: true,
+        message: "Review deleted successfully",
+    })
+
+})

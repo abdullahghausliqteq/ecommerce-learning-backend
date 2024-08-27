@@ -6,7 +6,8 @@ module.exports = (err, req, res, next) => {
 
     //Handling wrong mongoDB _id error
     if (err.name === "CastError") {
-        err = new ErrorHandler(`Recource not found. Invalid ${err.path}`, 400)
+        console.log(err);
+        err = new ErrorHandler(`Resource not found. Invalid ${err.path}`, 400)
     }
 
     //Mongo Duplicate key error
@@ -27,7 +28,7 @@ module.exports = (err, req, res, next) => {
 
     res.status(err.statusCode).json({
         success: false,
-        message: err.message
+        message: err.message,
     })
 
 }
